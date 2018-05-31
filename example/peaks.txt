@@ -1,0 +1,6 @@
+# name | peak possitions 1-N | line widths 1-N | radii 1-N 
+dataFile | ile.ft3
+noise | 600000
+lineshape | Gauss
+default | N/A N/A |  0.2 0.2 0.04 | 0.5 1.2  0.04
+test1  | 47.75 17.6 0.88
