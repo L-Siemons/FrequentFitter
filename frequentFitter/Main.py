@@ -12,7 +12,7 @@ import lineShapeClasses as lsc
 
 def Main(inputFile):
     print '============================'
-    print '==//== SpectralFitter ==//=='
+    print '==//== FrequentFitter ==//=='
     print '- Written by Lucas Siemons -'
     print '============================'
 
