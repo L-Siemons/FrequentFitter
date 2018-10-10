@@ -1,5 +1,5 @@
 '''
-This is a modules for reading in files 
+This is a modules for reading in files
 '''
 
 import lineShapeClasses as lsc
@@ -8,17 +8,17 @@ import sys
 def readInputFile(file):
 
     '''
-    Reads in the input file 
+    Reads in the input file
 
     Args:
         file: The name of the input file
 
     Returns:
-        peaks: Dictionary containing the parameters in the 
-               input file 
+        peaks: Dictionary containing the parameters in the
+               input file
         spectrum_name: The name of the NMR spectrum
     '''
-    
+
     lineshape = None
     peaks = {}
     f = open(file,'r')
@@ -39,7 +39,7 @@ def readInputFile(file):
                 lineshape = token[1].rstrip().strip()
             elif name == 'engine':
                 engine = token[1].rstrip().strip()
-            else:    
+            else:
                 peaks[name] = {}
                 peaks[name]['position'] = [float(a) for a in token[1].split()]
                 if len(token) < 3:
@@ -58,6 +58,8 @@ def readInputFile(file):
         lineshape = lsc.Glore()
     elif lineshape == 'Loren':
         lineshape = lsc.Loren()
+    elif lineshape == 'RotGauss':
+        lineshape = lsc.RotGauss()
     else:
         print 'Line Shape doesnt exist (or is misspelt!)'
         sys.exit()
@@ -73,13 +75,13 @@ def readInputFile(file):
     return peaks, spectrum_name, lineshape
 
 def gnuplotCommand(counter, peak,dataFile):
-    
+
     gnuCommand =  ("splot '%s' i %i u 1:2:3 t 'Experimental' w linesp," %(dataFile,counter),
                    " '%s' i %i u 1:2:4 w lines t 'Group: %s'\n" %(dataFile,counter,peak),
                    "pause -1 'Press [ENTER] key to continue' \n")
-    
+
     gnuCommandJoined = ''.join(gnuCommand)
-    
+
     return gnuCommandJoined, counter+1
 
 def printWrite(str, file):

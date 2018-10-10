@@ -4,7 +4,7 @@
 import nmrglue as ng
 import numpy as np
 import func
-import lineShapes as ls 
+import lineShapes as ls
 import least_sq_fit as lsq
 import fileIo
 import lineShapeClasses as lsc
@@ -18,7 +18,7 @@ def Main(inputFile):
 
     #read in the input file
     peaks, spec, lineshapeModel = fileIo.readInputFile(inputFile)
-    #read in the spectrum 
+    #read in the spectrum
     # read in the data from a NMRPipe file
     dic, data = ng.pipe.read(spec)
     dims = len(data.shape)
@@ -34,15 +34,17 @@ def Main(inputFile):
         for indx,(i,j) in enumerate(zip(peaks[peak]['position'], peaks[peak]['radius'])):
             dimIndex[indx] = func.get_index(i, axis[indx], j)
             reducedAxis[indx] =  axis[indx][dimIndex[indx][0]:dimIndex[indx][1]]
-        
 
-        #make the selection  
+
+        #make the selection
         sliceTupples =  [slice(dimIndex[a][0], dimIndex[a][1]) for a in dimIndex]
         dataReduced = data[sliceTupples]
         #apply an ellipsoid mask
-        
-        
+
+
         x = [ reducedAxis[i] for i in reducedAxis]
+
+
         #this is so that the function is calculated over a grid
         x = func.ndm(*x)
 
@@ -55,9 +57,13 @@ def Main(inputFile):
 
         if lineshapeModel.mixing == False:
             models = lineshapeModel.func(x, result['intensity'], shifts, lws)
-        else:
+        elif lineshapeModel.mixing == True:
             mixing = [result['mixing_%i' % (dim)] for dim in range(dims)]
             models = lineshapeModel.func(x, result['intensity'], shifts, lws,mixing)
+        elif lineshapeModel.mixing == 'theta':
+            theta = result['theta']
+            models = lineshapeModel.func(x, result['intensity'], shifts, lws, theta)
+
         #this is writing out the data
         #should be moved to another function
         dataFile = peak+'.dat'
@@ -67,7 +73,7 @@ def Main(inputFile):
 
         counter = 0
         gnuCount = 0
-        
+
         if len(dataReduced.shape) == 2:
             dataReduced = dataReduced[np.newaxis,:,:]
             models = models[np.newaxis,:,:]
@@ -81,7 +87,7 @@ def Main(inputFile):
             for indx1, i  in enumerate(slice_):
                 for indx2, k in enumerate(slice_[indx1]):
 
-                    
+
                     co_ords = '%0.5f %0.5f' % (reducedAxis[axisKeys[-2]][indx1], reducedAxis[axisKeys[-1]][indx2])
                     res = ' %0.5f %0.5f\n' % (k, modelSlice[indx1][indx2])
 
