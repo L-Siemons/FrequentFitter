@@ -1,50 +1,67 @@
 import nmrglue as ng
 
 '''
-This modules contains misc functions that so far have no 
+This modules contains misc functions that so far have no
 clear grouping or don't seem worth giving their own sub package
 '''
 
-def get_index(val, axis, radius):
+def get_index(axis, group, peaks):
     '''
     Takes the index for the values in the axis at the
     that are closest to the boundary defined by the radius
 
     Args:
-        val: peak position
-        axis: dictionary containing the axis 
-        radius: the radius
+        group: list of the peak groups
+        axis: dictionary containing the axis
+        peaks: object containing the peak information
 
     Returns:
-        tuple: contains the indicies  at each extreme of the radius
+        dimIndex: dictionary containing the indexes for each dim
+
     '''
-    check = True
-    min_ = None
 
+    dimIndex = {}
 
-    for i,j in enumerate(axis):
+    for dim in axis:
+        peak_range = []
+        check = True
+        min_ = None
+        for i in peaks:
+            point1 = peaks[i]['position'][dim] + peaks[i]['radius'][dim]
+            point2 = peaks[i]['position'][dim] - peaks[i]['radius'][dim]
+            peak_range.append(point1)
+            peak_range.append(point2)
 
-        if j <= val + radius:
-            if min_ == None:
-                min_ = i
-        
-        if j <= val - radius:
-            max_ = i
-            break
+        maximum = max(peak_range)
+        minimum = min(peak_range)
+        print dim
+        print 'max; ', maximum
+        print 'min; ', minimum
 
-    #print min_, max_
-    return (min_,max_)
+        for i,j in enumerate(axis[dim]):
+
+            if j <= maximum:
+                if min_ == None:
+                    min_ = i
+
+            if j <= minimum:
+                max_ = i
+                break
+
+        dimIndex[dim] = (min_,max_)
+
+    return dimIndex
 
 def collect_axis(dims, dic, data):
     '''
     Collects the NMR glue axis into a dictionary
 
     Args:
-        dims: number of dimensions 
+        dims: number of dimensions
         dic: dictionary returned by ng.pipe.read
         data: data returned by ng.pipe.read
 
-    Returns: 
+    Returns:
         axis: dictionary containing the axis
     '''
 
@@ -60,7 +77,7 @@ def collect_axis(dims, dic, data):
 
 def ndm(*args):
     '''
-    A magic function found here 
+    A magic function found here
     https://stackoverflow.com/questions/22774726/numpy-evaluate-function-on-a-grid-of-points
     '''
 
@@ -70,7 +87,7 @@ def elipsoid(pos,peak):
     '''
     This evaluates if a point is inside the ellipsoid.
     '''
-    
+
     working = 0.
     for dim in peak:
         print dim
