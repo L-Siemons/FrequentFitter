@@ -17,15 +17,14 @@ def Main(inputFile):
     print '============================'
 
     #read in the input file
-    peaks, spec, lineshapeModel = fileIo.readInputFile(inputFile)
+    peaks, spec, lineshapeModel, groups = fileIo.readInputFile(inputFile)
     #read in the spectrum
     # read in the data from a NMRPipe file
     dic, data = ng.pipe.read(spec)
     dims = len(data.shape)
     #get the axis info
+
     axis = func.collect_axis(dims, dic, data)
-
-
     for peak in peaks:
         dimIndex = {}
         reducedAxis = {}
@@ -43,7 +42,6 @@ def Main(inputFile):
 
 
         x = [ reducedAxis[i] for i in reducedAxis]
-
 
         #this is so that the function is calculated over a grid
         x = func.ndm(*x)
