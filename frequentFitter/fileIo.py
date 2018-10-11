@@ -21,6 +21,7 @@ def readInputFile(file):
 
     lineshape = None
     peaks = {}
+    groups = []
     f = open(file,'r')
     for i in f.readlines():
         if i[0]!= '#':
@@ -39,6 +40,10 @@ def readInputFile(file):
                 lineshape = token[1].rstrip().strip()
             elif name == 'engine':
                 engine = token[1].rstrip().strip()
+            elif name == 'group':
+                g_line = i.split('|')[1:]
+                groups = [a.split() for a in g_line]
+
             else:
                 peaks[name] = {}
                 peaks[name]['position'] = [float(a) for a in token[1].split()]
@@ -72,7 +77,8 @@ def readInputFile(file):
             print i, peaks[name][i]
 
     f.close()
-    return peaks, spectrum_name, lineshape
+
+    return peaks, spectrum_name, lineshape, groups
 
 def gnuplotCommand(counter, peak,dataFile):
 
