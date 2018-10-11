@@ -1,6 +1,6 @@
-# name | peak possitions 1-N | line widths 1-N | radii 1-N 
-dataFile | ile.ft3
+# name | peak possitions 1-N | line widths 1-N | radii 1-N
+dataFile | test.ft2
 noise | 600000
-lineshape | Gauss
-default | N/A N/A |  0.2 0.2 0.04 | 1. 2.  0.06
-cBeta  | 54.6 24.6 2.025
+lineshape | RotGauss
+default | N/A N/A |  0.2 0.2 | 0.06  0.5
+cBeta  |  7.108 123.24
