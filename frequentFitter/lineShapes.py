@@ -59,20 +59,18 @@ def rotatable_gauss_2D(x, intensity, loc, width,theta):
 
     model = np.zeros((len(x1), len(x2)))
 
-    #this could be made faster
-    for i1 in range(model.shape[0]):
-        for i2 in range(model.shape[1]):
+    def rot_gauss(xi, yi,a,b,c, loc):
 
-            xi = x1[i1]
-            yi = x2[i2]
+        term1 = a*(xi-loc[0])**2.
+        term2 = 2*b*(xi-loc[0])*(yi-loc[1])
+        term3 = c*(yi-loc[1])**2.
 
-            term1 = a*(xi-loc[0])**2.
-            term2 = 2*b*(xi-loc[0])*(yi-loc[1])
-            term3 = c*(yi-loc[1])**2.
+        index = -1.*(term1 + term2 + term3)
+        
+        model = intensity*(np.e**index)
+        return model
 
-            index = -1.*(term1 + term2 + term3)
-
-            model[i1][i2] = intensity*(np.e**index)
+    model = rot_gauss(x1[:,None], x2[None,:], a,b,c,loc)
     return model
 
 def ndGaussian(x, intensity, loc, width):
