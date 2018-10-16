@@ -34,9 +34,9 @@ def get_index(axis, group, peaks):
 
         maximum = max(peak_range)
         minimum = min(peak_range)
-        print dim
-        print 'max; ', maximum
-        print 'min; ', minimum
+        #print dim
+        #print 'max; ', maximum
+        #print 'min; ', minimum
 
         for i,j in enumerate(axis[dim]):
 

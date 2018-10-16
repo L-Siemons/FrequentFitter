@@ -18,7 +18,7 @@ def Main(inputFile):
 
     #read in the input file
     peaks, spec, lineshapeModel, groups = fileIo.readInputFile(inputFile)
-    print groups
+
     for i in peaks:
         check = False
         for i2 in groups:
@@ -26,7 +26,7 @@ def Main(inputFile):
                 check = True
         if check == False:
             groups = groups + [[i]]
-    print groups
+
     #read in the spectrum
     # read in the data from a NMRPipe file
     dic, data = ng.pipe.read(spec)
