@@ -34,9 +34,9 @@ The possible line shapes are:
 
 Line-shape			key 
 Gaussian			Gauss 
-Lorentzian	    	Loren
-GLORE       		Glore
-rotated Gaussian  	RotGauss
+Lorentzian			Loren
+Glore				Glore
+rotated Gaussian	RotGauss
 
 The Glore function is 
 f = m * Gauss() + (m-1) * Loren. 
