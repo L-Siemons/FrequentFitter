@@ -3,12 +3,13 @@
 
 import nmrglue as ng
 import numpy as np
-import func
-import lineShapes as ls
-import least_sq_fit as lsq
-import fileIo
-import lineShapeClasses as lsc
-import sys
+
+from . import func
+from . import lineShapes as ls
+from . import least_sq_fit as lsq
+from . import fileIo
+from . import lineShapeClasses as lsc
+
 
 def Main(inputFile):
     print '============================'

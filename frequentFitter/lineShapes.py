@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 
 '''
 This module contains the line shapes for the NMR signals

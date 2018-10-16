@@ -1,4 +1,4 @@
-import lineShapes as ls
+from . import lineShapes as ls
 
 class Gauss():
     """class for the Guassian line shape"""

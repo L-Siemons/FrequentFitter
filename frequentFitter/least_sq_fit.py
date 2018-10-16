@@ -1,8 +1,8 @@
 import numpy as np
 import scipy
 from lmfit import minimize, Minimizer, Parameters, Parameter, report_fit
-import lineShapes as ls
-import fileIo
+from . import lineShapes as ls
+from . import fileIo
 
 
 def plane(params, x, data, dims,lineShape,group, peaks):

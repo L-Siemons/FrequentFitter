@@ -2,8 +2,7 @@
 This is a modules for reading in files
 '''
 
-import lineShapeClasses as lsc
-import sys
+from . import lineShapeClasses as lsc
 
 def readInputFile(file):
 
