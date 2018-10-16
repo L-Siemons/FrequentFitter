@@ -26,7 +26,7 @@ def get_index(axis, group, peaks):
         peak_range = []
         check = True
         min_ = None
-        for i in peaks:
+        for i in group:
             point1 = peaks[i]['position'][dim] + peaks[i]['radius'][dim]
             point2 = peaks[i]['position'][dim] - peaks[i]['radius'][dim]
             peak_range.append(point1)
