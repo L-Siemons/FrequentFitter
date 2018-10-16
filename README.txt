@@ -28,6 +28,7 @@ noise | 600000                                                # estimate of the 
 lineshape | Gauss                                             # line shape choice 
 default | N/A N/A |  0.2 0.2 0.04 | 0.5 1.2  0.04             # default configurations
 test1  | 47.75 17.6 0.88                                      # configurations for the specific peak
+group  | peak1 peak2 | peak3 peak4                           # fit peak1 and 2 together and peak 3 and 4 together
 
 The lines for the specific peaks can be be many so long as they have different. 
 The possible line shapes are: 
