@@ -32,10 +32,11 @@ test1  | 47.75 17.6 0.88                                      # configurations f
 The lines for the specific peaks can be be many so long as they have different. 
 The possible line shapes are: 
 
-Line-shape   key 
-Gaussian     Gauss 
-Lorentzian   Loren
-GLORE        Glore
+Line-shape			key 
+Gaussian			Gauss 
+Lorentzian	    	Loren
+GLORE       		Glore
+rotated Gaussian  	RotGauss
 
 The Glore function is 
 f = m * Gauss() + (m-1) * Loren. 
