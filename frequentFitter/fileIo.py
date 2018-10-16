@@ -42,7 +42,8 @@ def readInputFile(file):
                 engine = token[1].rstrip().strip()
             elif name == 'group':
                 g_line = i.split('|')[1:]
-                groups = [a.split() for a in g_line]
+                if groups != []:
+                    groups = [a.split() for a in g_line]
 
             else:
                 peaks[name] = {}

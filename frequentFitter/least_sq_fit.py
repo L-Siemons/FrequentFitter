@@ -5,7 +5,7 @@ import lineShapes as ls
 import fileIo
 
 
-def residual(params, x, data, dims,lineShape,start,mixingState):
+def plane(params, x, data, dims,lineShape,group, peaks):
     '''
     this works out the residual
 
@@ -19,23 +19,40 @@ def residual(params, x, data, dims,lineShape,start,mixingState):
         Chi-square: float
     '''
 
-    shifts = [params['shift_%i' % (dim)] for dim in range(dims)]
-    lws = [params['lw_%i' % (dim)] for dim in range(dims)]
+    mixingState = lineShape.mixing
+    planes = []
 
-    if mixingState == False:
-        model = lineShape.func(x, params['intensity'], shifts, lws)
+    for peak in group:
+        shifts = [params['%s_shift_%i' % (peak, dim)] for dim in range(dims)]
+        lws = [params['%s_lw_%i' % (peak, dim)] for dim in range(dims)]
 
-    elif mixingState == 'theta':
-        theta = params['theta']
-        model = lineShape.func(x, params['intensity'], shifts, lws, theta)
-    else:
+        intensity_tag = '%s_intensity' % (peak)
 
-    	mixing = [params['mixing_%i' % (dim)] for dim in range(dims)]
-        model = lineShape.func(x, params['intensity'], shifts, lws, mixing)
+        if mixingState == False:
+            model = lineShape.func(x, params[intensity_tag], shifts, lws)
 
-    return (data - model)/start['noise']
+        elif mixingState == 'theta':
+            theta_tag = '%s_theta' %(peak)
+            theta = params[theta_tag]
+            model = lineShape.func(x, params[intensity_tag], shifts, lws, theta)
 
-def setup_params(dims, lineShape,start):
+        else:
+
+    	    mixing = [params['%s_mixing_%i' % (peak, dim)] for dim in range(dims)]
+            model = lineShape.func(x, params[intensity_tag], shifts, lws, mixing)
+
+        planes.append(model)
+
+    final_model = sum(planes)
+    return final_model
+
+def residual(params, x, data, dims,lineShape,group, peaks):
+    final_model = plane(params, x, data, dims,lineShape,group, peaks)
+    noise = float(peaks[peaks.keys()[0]]['noise'])
+    resid = (data - final_model)/noise
+    return resid
+
+def setup_params(dims, lineShape, group, peaks, start_int):
     '''
     Set up the parameters object from lmfit
 
@@ -50,23 +67,31 @@ def setup_params(dims, lineShape,start):
     #define parameters
     params = Parameters()
 
-    for i,(j,k) in enumerate(zip(start['position'], start['lw'])):
-        lw_tag = 'lw_%i'%(i)
-        shift_tag = 'shift_%i'%(i)
-        params.add(lw_tag, vary=False, value=k, min=0)
-        params.add(shift_tag, vary=False, value=j)
+    for peak in group:
+        for i in range(dims):
 
-        if lineShape.mixing == True:
-        	mixing_tag = 'mixing_%i'%(i)
-        	params.add(mixing_tag, vary=False, value=0.2, min=0, max=1)
+            lw_tag = '%s_lw_%i' % (peak,i)
+            shift_tag = '%s_shift_%i' % (peak,i)
+            intensity_tag = '%s_intensity' % (peak)
 
-    if lineShape.mixing == 'theta':
-        params.add('theta', vary=True, value=0)
+            lw_val = peaks[peak]['lw'][i]
+            shift_val = peaks[peak]['position'][i]
 
-    params.add('intensity',vary=False,value=start['intensity'])
+            params.add(lw_tag, vary=False, value=lw_val, min=0)
+            params.add(shift_tag, vary=False, value=shift_val)
+            params.add(intensity_tag, vary=False, value=start_int)
+
+            if lineShape.mixing == True:
+            	mixing_tag = '%s_mixing_%i'%(peak, i)
+            	params.add(mixing_tag, vary=False, value=0.2, min=0, max=1)
+
+        if lineShape.mixing == 'theta':
+            theta_tag = '%s_theta' % (peak)
+            params.add(theta_tag, vary=True, value=0)
+
     return params
 
-def fit(x, data, dims, lineShape, start,name):
+def fit(x, data, dims, lineShape, group, peaks):
 
     '''
     This function carries out the least squares fitting.
@@ -89,11 +114,11 @@ def fit(x, data, dims, lineShape, start,name):
         result2: This is the result object from lmfit from the final fitting step
     '''
 
-    start['intensity'] = np.max(data)/2.
-
-    params = setup_params(dims, lineShape, start)
+    start_int = np.max(data)/2.
+    params = setup_params(dims, lineShape, group, peaks, start_int)
     kws  = {'options': {'maxiter':1000}}
-    fit_args = ( x, data, dims, lineShape,start,lineShape.mixing)
+
+    fit_args = ( x, data, dims,lineShape,group, peaks)
 
     #print '===//=== Fit intensity and position ===//==='
     # adjust params for the fist fit:
@@ -108,6 +133,7 @@ def fit(x, data, dims, lineShape, start,name):
 
     minner = Minimizer(residual, params, fcn_args=fit_args,)
     result = minner.minimize()
+
     # write error report
     #print report_fit(result)
 
@@ -122,7 +148,9 @@ def fit(x, data, dims, lineShape, start,name):
             if tag in entry:
                 params_2[entry].set(vary=True)
 
-    params_2['intensity'].set(vary=False)
+    for i in params_2.keys():
+    	if 'intensity' in i:
+            params_2[i].set(vary=False)
     minner = Minimizer(residual, params_2, fcn_args=fit_args,)
     result1 = minner.minimize()
     #print report_fit(result1)
@@ -145,7 +173,7 @@ def fit(x, data, dims, lineShape, start,name):
         strings.append( '%10s %0.5f +/- %0.5f' % (i, result2.params[i].value,result2.params[i].stderr))
     strings.append('============================')
 
-
+    name = '_'.join(group)
     fname = name+'.report'
     f = open(fname, 'w')
     strings = '\n'.join(strings)

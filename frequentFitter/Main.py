@@ -8,7 +8,7 @@ import lineShapes as ls
 import least_sq_fit as lsq
 import fileIo
 import lineShapeClasses as lsc
-
+import sys
 
 def Main(inputFile):
     print '============================'
@@ -18,28 +18,34 @@ def Main(inputFile):
 
     #read in the input file
     peaks, spec, lineshapeModel, groups = fileIo.readInputFile(inputFile)
+    print groups
+    for i in peaks:
+        check = False
+        for i2 in groups:
+            if i in i2:
+                check = True
+        if check == False:
+            groups = groups + [[i]]
+    print groups
     #read in the spectrum
     # read in the data from a NMRPipe file
     dic, data = ng.pipe.read(spec)
     dims = len(data.shape)
+
     #get the axis info
-
     axis = func.collect_axis(dims, dic, data)
-    for peak in peaks:
-        dimIndex = {}
-        reducedAxis = {}
-        #make the selection on the data
-        #also make the selection on the axis
-        for indx,(i,j) in enumerate(zip(peaks[peak]['position'], peaks[peak]['radius'])):
-            dimIndex[indx] = func.get_index(i, axis[indx], j)
-            reducedAxis[indx] =  axis[indx][dimIndex[indx][0]:dimIndex[indx][1]]
 
+    for group in groups:
+        dimIndex = func.get_index(axis, group, peaks)
+
+        reducedAxis = {}
+        for indx in range(dims):
+            reducedAxis[indx] =  axis[indx][dimIndex[indx][0]:dimIndex[indx][1]]
 
         #make the selection
         sliceTupples =  [slice(dimIndex[a][0], dimIndex[a][1]) for a in dimIndex]
         dataReduced = data[sliceTupples]
         #apply an ellipsoid mask
-
 
         x = [ reducedAxis[i] for i in reducedAxis]
 
@@ -47,23 +53,13 @@ def Main(inputFile):
         x = func.ndm(*x)
 
 
-        result = lsq.fit(x, dataReduced, dims, lineshapeModel, peaks[peak],peak)
-        result = result.params.valuesdict()
-
-        shifts = [result['shift_%i' % (dim)] for dim in range(dims)]
-        lws = [result['lw_%i' % (dim)] for dim in range(dims)]
-
-        if lineshapeModel.mixing == False:
-            models = lineshapeModel.func(x, result['intensity'], shifts, lws)
-        elif lineshapeModel.mixing == True:
-            mixing = [result['mixing_%i' % (dim)] for dim in range(dims)]
-            models = lineshapeModel.func(x, result['intensity'], shifts, lws,mixing)
-        elif lineshapeModel.mixing == 'theta':
-            theta = result['theta']
-            models = lineshapeModel.func(x, result['intensity'], shifts, lws, theta)
+        result = lsq.fit(x, dataReduced, dims, lineshapeModel, group, peaks)
+        result = result.params
+        models = lsq.plane(result, x, dataReduced, dims,lineshapeModel,group, peaks)
 
         #this is writing out the data
         #should be moved to another function
+        peak = '_'.join(group)
         dataFile = peak+'.dat'
         gnuFile = peak+'.gnu'
         f = open(dataFile,'w')
