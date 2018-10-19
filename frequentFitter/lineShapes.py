@@ -22,7 +22,7 @@ def gaussian(x, intensity, loc, width):
 
 
     index = ((x-loc)**2.)/(2*(width**2))*(-1.)
-    gauss = intensity * (np.e**(index))
+    gauss =  np.e**(index)
     return gauss
 
 def lorenzian(x, intensity, loc, width):
@@ -31,7 +31,7 @@ def lorenzian(x, intensity, loc, width):
     '''
     val = (loc-x)/width
     shape = 1./(1+(val**2))
-    return shape * intensity
+    return shape
 
 def rotatable_gauss_2D(x, intensity, loc, width,theta):
 
@@ -71,6 +71,8 @@ def rotatable_gauss_2D(x, intensity, loc, width,theta):
 
     model = rot_gauss(x1[:,None], x2[None,:], a,b,c,loc)
     return model
+
+def rotatable_lorren_2D()
 
 def ndGaussian(x, intensity, loc, width):
     '''
