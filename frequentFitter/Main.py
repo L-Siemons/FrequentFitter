@@ -46,6 +46,7 @@ def Main(inputFile):
         #make the selection
         sliceTupples =  [slice(dimIndex[a][0], dimIndex[a][1]) for a in dimIndex]
         dataReduced = data[sliceTupples]
+        print 'The grid dimensions are: ', dataReduced.shape
         #apply an ellipsoid mask
 
         x = [ reducedAxis[i] for i in reducedAxis]
@@ -81,7 +82,6 @@ def Main(inputFile):
             #write out the grid
             for indx1, i  in enumerate(slice_):
                 for indx2, k in enumerate(slice_[indx1]):
-
 
                     co_ords = '%0.5f %0.5f' % (reducedAxis[axisKeys[-2]][indx1], reducedAxis[axisKeys[-1]][indx2])
                     res = ' %0.5f %0.5f\n' % (k, modelSlice[indx1][indx2])

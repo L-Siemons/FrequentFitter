@@ -64,9 +64,14 @@ def readInputFile(file):
         lineshape = lsc.Loren()
     elif lineshape == 'RotGauss':
         lineshape = lsc.RotGauss()
+    elif lineshape == 'RotLorren':
+        lineshape = lsc.RotGauss()
+    elif lineshape == 'RotGlore':
+        lineshape = lsc.Rotglore()
+
     else:
         print 'Line Shape doesnt exist (or is misspelt!)'
-        sys.exit()
+
     print 'Read in:'
     print '--------'
     print 'spectrum name: ', spectrum_name

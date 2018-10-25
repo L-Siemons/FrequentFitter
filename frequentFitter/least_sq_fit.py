@@ -3,7 +3,7 @@ import scipy
 from lmfit import minimize, Minimizer, Parameters, Parameter, report_fit
 from . import lineShapes as ls
 from . import fileIo
-
+import decimal
 
 def plane(params, x, data, dims,lineShape,group, peaks):
     '''
@@ -35,9 +35,14 @@ def plane(params, x, data, dims,lineShape,group, peaks):
             theta_tag = '%s_theta' %(peak)
             theta = params[theta_tag]
             model = lineShape.func(x, params[intensity_tag], shifts, lws, theta)
-
+        
+        elif mixingState == 'theta_mixing':
+            theta_tag = '%s_theta' %(peak)
+            theta = params[theta_tag]   
+            mixing = params['%s_mixing' % (peak)]
+            model = lineShape.func(x, params[intensity_tag], shifts, lws, theta, mixing)
+        
         else:
-
     	    mixing = [params['%s_mixing_%i' % (peak, dim)] for dim in range(dims)]
             model = lineShape.func(x, params[intensity_tag], shifts, lws, mixing)
 
@@ -50,6 +55,7 @@ def residual(params, x, data, dims,lineShape,group, peaks):
     final_model = plane(params, x, data, dims,lineShape,group, peaks)
     noise = float(peaks[peaks.keys()[0]]['noise'])
     resid = (data - final_model)/noise
+    #print np.sum(resid**2)
     return resid
 
 def setup_params(dims, lineShape, group, peaks, start_int):
@@ -76,18 +82,40 @@ def setup_params(dims, lineShape, group, peaks, start_int):
 
             lw_val = peaks[peak]['lw'][i]
             shift_val = peaks[peak]['position'][i]
+            shift_min = shift_val - lw_val
+            shift_max = shift_val + lw_val
+
+
 
             params.add(lw_tag, vary=False, value=lw_val, min=0)
-            params.add(shift_tag, vary=False, value=shift_val)
+            params.add(shift_tag, vary=False, value=shift_val, min=shift_min, max=shift_max)
             params.add(intensity_tag, vary=False, value=start_int)
 
             if lineShape.mixing == True:
             	mixing_tag = '%s_mixing_%i'%(peak, i)
             	params.add(mixing_tag, vary=False, value=0.2, min=0, max=1)
+            
+        if lineShape.mixing == 'theta_mixing':
+            mixing_tag = '%s_mixing'%(peak)
+            params.add(mixing_tag, vary=False, value=0.2, min=0, max=1)
 
-        if lineShape.mixing == 'theta':
+
+        if lineShape.mixing == 'theta' or lineShape.mixing == 'theta_mixing':
             theta_tag = '%s_theta' % (peak)
-            params.add(theta_tag, vary=True, value=0)
+            params.add(theta_tag, vary=True, value=0,)
+
+    return params
+
+def change_params_varry(params, tags):
+
+    for i in params:
+        params[i].set(vary=False)
+
+        for entry in tags:
+            if entry in i:
+                params[i].set(vary=True)
+            if entry == 'intensity':
+                params[i].set(value=params[i].value)
 
     return params
 
@@ -123,55 +151,40 @@ def fit(x, data, dims, lineShape, group, peaks):
     #print '===//=== Fit intensity and position ===//==='
     # adjust params for the fist fit:
 
-    for i in params:
-        params[i].set(vary=False)
-
-    for tag in lineShape.fit_1:
-        for entry in params:
-            if tag in entry:
-                params[entry].set(vary=True)
+    change_params_varry(params, lineShape.fit_1)
 
     minner = Minimizer(residual, params, fcn_args=fit_args,)
     result = minner.minimize()
-
+    print 'fit 1: complete'
     # write error report
     #print report_fit(result)
 
     #print '===//=== Fit position  ===//==='
-    params_2 = result.params
+    params_2 = change_params_varry(result.params, lineShape.fit_2)
 
-    for i in params_2:
-        params_2[i].set(vary=False)
-
-    for tag in lineShape.fit_2:
-        for entry in params:
-            if tag in entry:
-                params_2[entry].set(vary=True)
-
-    for i in params_2.keys():
-    	if 'intensity' in i:
-            params_2[i].set(vary=False)
     minner = Minimizer(residual, params_2, fcn_args=fit_args,)
-    result1 = minner.minimize()
-    #print report_fit(result1)
+    result2 = minner.minimize()
+    print 'fit 2: complete'
+    
 
-    #print '===//=== Fit all ===//==='
-    params_3 = result1.params
-    for i in params_3:
-        params_3[i].set(vary=True)
+    params_3 = change_params_varry(result2.params, lineShape.fit_3)
 
     minner = Minimizer(residual, params_3, fcn_args=fit_args,)
-    result2 = minner.minimize()
-    #print report_fit(result2)
+    result3 = minner.minimize()
 
     strings = []
     strings.append( '===//=== Fit Report ===//===')
-    strings.append(  'Fit was successful: '+ str( result2.success))
-    strings.append( 'chi square: %0.3f' %(result2.chisqr))
-    strings.append('reduced chi square: %0.3f' %(result2.redchi))
-    for i in result2.params:
-        strings.append( '%10s %0.5f +/- %0.5f' % (i, result2.params[i].value,result2.params[i].stderr))
+    strings.append(  'Fit was successful: '+ str( result3.success))
+    strings.append( 'chi square: %0.3f' %(result3.chisqr))
+    strings.append('reduced chi square: %0.3f' %(result3.redchi))
+    for i in result3.params:
+        decimal_value = '%.3E' % decimal.Decimal(result3.params[i].value)
+        decimal_err = '%.3E' % decimal.Decimal(result3.params[i].stderr)
+        strings.append( '%20s %s +/- %s' % (i, decimal_value,decimal_err))
     strings.append('============================')
+    
+    for i in result3.params:
+        print result3.params[i]
 
     name = '_'.join(group)
     fname = name+'.report'
