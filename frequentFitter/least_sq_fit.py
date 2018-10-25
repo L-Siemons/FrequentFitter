@@ -102,7 +102,7 @@ def setup_params(dims, lineShape, group, peaks, start_int):
 
         if lineShape.mixing == 'theta' or lineShape.mixing == 'theta_mixing':
             theta_tag = '%s_theta' % (peak)
-            params.add(theta_tag, vary=True, value=0,)
+            params.add(theta_tag, vary=True, value=0, max=0, min=-np.pi/4.)
 
     return params
 
