@@ -19,7 +19,7 @@ def Main(inputFile):
 
     #read in the input file
     peaks, spec, lineshapeModel, groups = fileIo.readInputFile(inputFile)
-
+    fits = []
     for i in peaks:
         check = False
         for i2 in groups:
@@ -93,5 +93,5 @@ def Main(inputFile):
             g.write(gnuCommand)
         g.close()
         f.close()
-
-    return result3 
+        fits.append(result3)
+    return fits
