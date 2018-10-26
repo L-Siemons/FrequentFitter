@@ -169,7 +169,7 @@ def fit(x, data, dims, lineShape, group, peaks):
 
     params_3 = change_params_varry(result2.params, lineShape.fit_3)
 
-    minner = Minimizer(residual, params_3, fcn_args=fit_args,)
+    minner = Minimizer(residual, params_3, fcn_args=fit_args)
     result3 = minner.minimize()
 
     strings = []
@@ -180,11 +180,9 @@ def fit(x, data, dims, lineShape, group, peaks):
     for i in result3.params:
         decimal_value = '%.3E' % decimal.Decimal(result3.params[i].value)
         decimal_err = '%.3E' % decimal.Decimal(result3.params[i].stderr)
-        strings.append( '%20s %s +/- %s' % (i, decimal_value,decimal_err))
+        percent = result3.params[i].stderr/result3.params[i].value*100.
+        strings.append( '%20s %s +/- %s (%0.2f percent)' % (i, decimal_value,decimal_err, percent))
     strings.append('============================')
-    
-    for i in result3.params:
-        print result3.params[i]
 
     name = '_'.join(group)
     fname = name+'.report'
