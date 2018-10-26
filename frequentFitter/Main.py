@@ -56,8 +56,7 @@ def Main(inputFile):
 
 
         result = lsq.fit(x, dataReduced, dims, lineshapeModel, group, peaks)
-        result = result.params
-        models = lsq.plane(result, x, dataReduced, dims,lineshapeModel,group, peaks)
+        models = lsq.plane(result.params, x, dataReduced, dims,lineshapeModel,group, peaks)
 
         #this is writing out the data
         #should be moved to another function
@@ -93,5 +92,6 @@ def Main(inputFile):
             g.write(gnuCommand)
         g.close()
         f.close()
-        fits.append(result3)
+        fits.append(result)
+
     return fits
