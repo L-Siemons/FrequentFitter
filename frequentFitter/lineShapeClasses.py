@@ -29,7 +29,7 @@ class Loren():
 class Glore():
     """ ndLorentzian line shape"""
     def __init__(self,):
-        self.fit_1 = ['intensity', 'mixing']
+        self.fit_1 = ['intensity']
         self.fit_2 = ['lw', 'shift','mixing']
         self.fit_3 = ['lw', 'shift', 'intensity', 'mixing']
         self.func = ls.ndGlore
@@ -40,7 +40,7 @@ class RotGauss():
     def __init__(self,):
         self.fit_1 = ['intensity',]
         self.fit_2 = ['lw', 'shift', 'theta']
-        self.fit_3 = ['lw', 'shift', 'intensity', 'theta']
+        self.fit_3 = ['lw', 'shift', 'intensity',]
         self.func = ls.rotatable_gauss_2D
         self.mixing = 'theta'
 
@@ -57,7 +57,16 @@ class Rotglore():
     """ ndLorentzian line shape"""
     def __init__(self,):
         self.fit_1 = ['intensity',]
+        self.fit_2 = ['lw', 'shift', 'theta',]
+        self.fit_3 = ['lw', 'shift', 'intensity','mixing']
+        self.func = ls.rotatable_glore_2D
+        self.mixing = 'theta_mixing'
+
+class RotXglore():
+    """ ndLorentzian line shape"""
+    def __init__(self,):
+        self.fit_1 = ['intensity',]
         self.fit_2 = ['lw', 'shift', 'theta','mixing']
         self.fit_3 = ['lw', 'shift', 'intensity', 'mixing' , 'theta']
-        self.func = ls.rotatable_glore_2D
+        self.func = ls.rotatable_x_glore_2D
         self.mixing = 'theta_mixing'
