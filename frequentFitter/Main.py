@@ -94,3 +94,4 @@ def Main(inputFile):
         g.close()
         f.close()
 
+    return result3 
