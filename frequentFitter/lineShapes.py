@@ -29,12 +29,20 @@ def check_2D(x):
         print '================================================='
         sys.exit()
 
+def std_to_lwhm(width):
+    '''
+    this is because the widths of the Lorentzian and
+    Gaussian are defined differently 
+    '''
+    return width/2.*np.sqrt(2.*np.log(2.))
 
 def gaussian(x, intensity, loc, width):
     '''
     Gaussian line shape
     '''
 
+    #correction so that the lw it the width at half maximum 
+    width = std_to_lwhm(width)
 
     index = ((x-loc)**2.)/(2*(width**2))*(-1.)
     gauss =  np.e**(index)
@@ -109,16 +117,18 @@ def rotatable_lorren_2D_shape(x, loc, width,theta):
 
 def rotatable_glore_2D_shape(x, loc, width,theta, mixing):
 
-    a1 = np.divide(np.cos(theta)**2.,2*(width[0]**2.))
-    a2 = np.divide(np.sin(theta)**2.,2*(width[1]**2.))
+    gauss_wahm = [std_to_lwhm(a) for a in width]
+
+    a1 = np.divide(np.cos(theta)**2.,2*(gauss_wahm[0]**2.))
+    a2 = np.divide(np.sin(theta)**2.,2*(gauss_wahm[1]**2.))
     a = a1+ a2
 
-    b1 = -1.*np.divide(np.sin(2.*theta), 4*(width[0]**2.))
-    b2 = np.divide(np.sin(2.*theta), 4*(width[1]**2.))
+    b1 = -1.*np.divide(np.sin(2.*theta), 4*(gauss_wahm[0]**2.))
+    b2 = np.divide(np.sin(2.*theta), 4*(gauss_wahm[1]**2.))
     b = b1 + b2
 
-    c1 = np.divide(np.sin(theta)**2.,2*(width[0]**2.))
-    c2 = np.divide(np.cos(theta)**2.,2*(width[1]**2.))
+    c1 = np.divide(np.sin(theta)**2.,2*(gauss_wahm[0]**2.))
+    c2 = np.divide(np.cos(theta)**2.,2*(gauss_wahm[1]**2.))
     c = c1+c2
 
     x1 = np.ndarray.flatten(x[0])
@@ -157,18 +167,55 @@ def rotatable_glore_2D_shape(x, loc, width,theta, mixing):
 
     return glore(x1[:,None], x2[None,:], x0_rot, y0_rot, theta, width, mixing)
 
+def rotatable_x_glore_2D_shape(x, loc, width,theta, mixing):
+
+    model = np.zeros((len(x1), len(x2)))
+    x0_rot = loc[0]*np.cos(theta) - loc[1]*np.sin(theta)
+    y0_rot = loc[1]
+    gauss_wahm = [std_to_lwhm(a) for a in width]
+    
+    def glore(xi, yi, x0_rot, y0_rot, theta, width, mixing, gauss_wahm):
+
+        #lorrenzian 
+        xi_rot = xi*np.cos(theta) - yi*np.sin(theta)
+        yi_rot = yi 
+        
+        frac1 = (x0_rot-xi_rot)/width[0]
+        frac1 = frac1**2.
+        frac1 = 1./(1.+frac1)
+
+        frac2 = (y0_rot-yi_rot)/width[1]
+        frac2 = frac2**2.
+        frac2 = 1./(1.+frac2)
+        
+        lorren = frac1*frac2
+
+        #gaussian 
+        index = ((xi_rot-x0_rot)**2.)/(2*(gauss_wahm[0]**2))*(-1.)
+        index2 = ((yi_rot-y0_rot)**2.)/(2*(gauss_wahm[1]**2))*(-1.)
+
+        gauss =  np.e**(index+index2)
+
+        return mixing*gauss + (1.-mixing)*lorren
+
+    return glore(x1[:,None], x2[None,:], x0_rot, y0_rot, theta, width, mixing)
 
 def rotatable_lorren_2D(x, intensity, loc, width,theta):
 	check_2D(x)
 	return intensity*rotatable_lorren_2D_shape(x, loc, width,theta)
 
 def rotatable_gauss_2D(x, intensity, loc, width,theta):
-	check_2D(x)
-	return intensity*rotatable_gauss_2D_shape(x, loc, width,theta)
+    width = [std_to_lwhm(a) for a in width]
+    check_2D(x)
+    return intensity*rotatable_gauss_2D_shape(x, loc, width,theta)
 
 def rotatable_glore_2D(x, intensity, loc, width,theta, mixing):
     check_2D(x)
     return rotatable_glore_2D_shape(x, loc, width,theta, mixing)*intensity
+
+def rotatable_x_glore_2D(x, intensity, loc, width,theta, mixing):
+    check_2D(x)
+    return rotatable_x_glore_2D_shape(x, loc, width,theta, mixing)*intensity
 
 def ndGaussian(x, intensity, loc, width):
     '''
