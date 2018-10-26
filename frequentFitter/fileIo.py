@@ -68,6 +68,8 @@ def readInputFile(file):
         lineshape = lsc.RotGauss()
     elif lineshape == 'RotGlore':
         lineshape = lsc.Rotglore()
+    elif lineshape == 'RotXGlore':
+        lineshape = lsc.RotXglore()
 
     else:
         print 'Line Shape doesnt exist (or is misspelt!)'
